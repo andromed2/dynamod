@@ -79,13 +79,12 @@ class AfterDistribution:
         self.cache[key] = res
 
     def tickover (self):    #called after changes are applied to matrix. total is segment size before changes
-        y = 0
-        if self.incoming > 0:
-            y = self.incoming / (self.total * (1 - self.sections[0]) + self.incoming)
         self.sections.pop(0)
         self.sections.append (0)
+
         for i in range(len(self.timeshares)):
-            self.sections[i] += y * self.timeshares[i]
+            self.sections[i] = self.total * self.sections[i] + self.incoming * self.timeshares[i]
+
         self.normalize()
         self.total = self.model.matrix[self.segment].sum()
         self.incoming = 0
@@ -111,8 +110,8 @@ class AfterDistribution:
 
     @staticmethod
     def after_explicit(fractions, *args):
-        from model import normalize_list
-        timeshares = normalize_list(*args, name="after.explicit attributes")
+        from dynamod.model import normalize_list
+        timeshares = normalize_list(args, name="after.explicit attributes")
         if fractions > 1:
             extended = []
             for s in timeshares:
